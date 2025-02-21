@@ -55,6 +55,7 @@ public class SamplingFlags {
     };
   }
 
+  // 采样和debug的标识
   final int flags; // bit field for sampled and debug
 
   SamplingFlags(int flags) {

@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <p>This initializes a random bitset of size 100 (corresponding to 1% granularity). This means
  * that it is accurate in units of 100 traces. At runtime, this loops through the bitset, returning
  * the value according to a counter.
+ * 采样率采样器
  */
 public final class CountingSampler extends Sampler {
 

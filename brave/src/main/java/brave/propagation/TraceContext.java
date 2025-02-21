@@ -62,7 +62,7 @@ public final class TraceContext extends SamplingFlags {
    * <p><em>Note</em>: This type is safe to implement as a lambda, or use as a method reference as
    * it is effectively a {@code FunctionalInterface}. It isn't annotated as such because the project
    * has a minimum Java language level 6.
-   *
+   * 将 TraceContext 注入请求载体（如 HTTP Header、Dubbo Attachment）
    * @since 4.0
    */
   // @FunctionalInterface, except Java language level 6. Do not add methods as it will break API!
@@ -82,7 +82,7 @@ public final class TraceContext extends SamplingFlags {
    * <p><em>Note</em>: This type is safe to implement as a lambda, or use as a method reference as
    * it is effectively a {@code FunctionalInterface}. It isn't annotated as such because the project
    * has a minimum Java language level 6.
-   *
+   * 从载体中提取 TraceContext，用于服务端构建子 Span
    * @see brave.Tracer#nextSpan(TraceContextOrSamplingFlags)
    * @since 4.0
    */
@@ -540,6 +540,12 @@ public final class TraceContext extends SamplingFlags {
     return new TraceContext(flags, traceIdHigh, traceId, localRootId, parentId, spanId, extraList);
   }
 
+  /**
+   * traceIdHigh: 唯一标识trace的16字节id，即128-bit
+   * traceId: 唯一标识trace的8字节id
+   * parentId: 父级Span的spanId
+   * spanId: 当前span的spanId
+   */
   final long traceIdHigh, traceId, localRootId, parentId, spanId;
   final List<Object> extraList;
 

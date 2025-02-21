@@ -14,6 +14,7 @@
 package brave;
 
 /**
+ * Noop什么都不做
  * Performs no operations as the span represented by this is not sampled to report to the tracing
  * system.
  */

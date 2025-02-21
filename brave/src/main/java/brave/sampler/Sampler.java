@@ -23,10 +23,14 @@ package brave.sampler;
  *
  * <p>The instrumentation sampling decision happens once, at the root of the trace, and is
  * propagated downstream. For this reason, the algorithm needn't be consistent based on trace ID.
+ * 采样器：判断一个traceId对应的追踪链路是否需要采样上报给zipkin
  */
 // abstract for factory-method support on Java language level 7
 public abstract class Sampler {
 
+  /**
+   * 永远需要被采样
+   */
   public static final Sampler ALWAYS_SAMPLE = new Sampler() {
     @Override public boolean isSampled(long traceId) {
       return true;
@@ -37,6 +41,9 @@ public abstract class Sampler {
     }
   };
 
+  /**
+   * 永远不要被采样
+   */
   public static final Sampler NEVER_SAMPLE = new Sampler() {
     @Override public boolean isSampled(long traceId) {
       return false;
@@ -59,7 +66,7 @@ public abstract class Sampler {
    *
    * <p>The sampler returned is good for low volumes of traffic (<100K requests), as it is precise.
    * If you have high volumes of traffic, consider {@link BoundarySampler}.
-   *
+   * 指定采样率
    * @param probability probability a trace will be sampled. minimum is 0.01, or 1% of traces
    */
   public static Sampler create(float probability) {

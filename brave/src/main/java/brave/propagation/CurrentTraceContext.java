@@ -59,6 +59,9 @@ public abstract class CurrentTraceContext {
     public abstract CurrentTraceContext build();
   }
 
+  /**
+   * 获取当前线程的TraceContext
+   */
   /** Returns the current span in scope or null if there isn't one. */
   public abstract @Nullable TraceContext get();
 
@@ -170,7 +173,7 @@ public abstract class CurrentTraceContext {
    * brave.Tracer#startScopedSpan(String)} and {@link brave.Tracer#withSpanInScope(brave.Span)} set
    * a span in scope. An executor wrapped with {@link #executor(Executor)} would decorate each
    * runnable.
-   *
+   * scope装饰器
    * @since 5.2
    */
   public interface ScopeDecorator {
