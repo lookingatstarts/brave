@@ -24,7 +24,7 @@ import static brave.internal.Throwables.propagateIfFatal;
 /**
  * This is a centralized type to parse a tag into any variant of a span. This also avoids the
  * clutter of checking null or guarding on exceptions.
- *
+ * 用于解析span的任何辩题，可以避免检查null或者保护异常有换乱
  * Here's an example of a potentially expensive tag:
  * <pre>{@code
  * SUMMARY_TAG = new Tag<Summarizer>("summary") {
@@ -41,20 +41,22 @@ import static brave.internal.Throwables.propagateIfFatal;
  * @since 5.11
  */
 public abstract class Tag<I> {
+
   public final String key() {
     return key;
   }
 
   /**
-   * Override to change what data from the input are parsed into the span modeling it. Any
-   * exceptions will be logged and ignored.
+   * Override to change what data from the input are parsed into the span modeling it.
+   *
+   * Any exceptions will be logged and ignored.
    *
    * <p><em>Note</em>: Overrides of {@link Tags#ERROR} must return a valid value when
    * {@param context} is {@code null}, even if that value is "" (empty string). Otherwise, error
    * spans will not be marked as such.
    *
    * @return The result to add as a span tag. {@code null} means no tag will be added. Note: empty
-   * string is a valid tag value!
+   * string is a valid tag value!  (value是合法的，会记录到span中)
    * @since 5.11
    */
   @Nullable protected abstract String parseValue(I input, @Nullable TraceContext context);
@@ -141,6 +143,7 @@ public abstract class Tag<I> {
 
   /** @since 5.11 */
   protected Tag(String key) {
+    // key不能为空
     this.key = validateNonEmpty("key", key);
   }
 
@@ -148,11 +151,14 @@ public abstract class Tag<I> {
     return getClass().getSimpleName() + "{" + key + "}";
   }
 
+  /**
+   * 设置span的标签
+   * @param span 兼容各种类型的span
+   */
   final void tag(Object span, I input, @Nullable TraceContext context) {
     String key = null;
     String value = null;
     Throwable error = null;
-
     // Defensively call the only protected methods
     try {
       key = key(input);
@@ -161,7 +167,6 @@ public abstract class Tag<I> {
       error = e;
       propagateIfFatal(e);
     }
-
     if (key == null || key.isEmpty()) {
       Platform.get().log("Error parsing tag key of input %s", input, error);
       return;
@@ -169,11 +174,12 @@ public abstract class Tag<I> {
       Platform.get().log("Error parsing tag value of input %s", input, error);
       return;
     }
-
     if (value == null) return;
     if (span instanceof SpanCustomizer) {
+      // SpanCustomizer
       ((SpanCustomizer) span).tag(key, value);
     } else if (span instanceof MutableSpan) {
+      // 设置标签
       ((MutableSpan) span).tag(key, value);
     }
   }

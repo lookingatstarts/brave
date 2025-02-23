@@ -28,6 +28,7 @@ import brave.internal.Nullable;
  * @since 5.10
  */
 public abstract class Response {
+
   /** The remote {@link Span.Kind} describing the direction and type of the response. */
   public abstract Span.Kind spanKind();
 

@@ -42,6 +42,7 @@ import static brave.internal.Throwables.propagateIfFatal;
  * <p>Originally designed by OkHttp team, derived from {@code okhttp3.internal.platform.Platform}
  */
 public abstract class ServletRuntime {
+
   private static final ServletRuntime SERVLET_RUNTIME = findServletRuntime();
 
   public HttpServletResponse httpServletResponse(ServletResponse response) {

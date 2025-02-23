@@ -75,6 +75,7 @@ public final class SamplerFunctions {
   }
 
   enum Constants implements SamplerFunction<Object> {
+    // 推迟
     DEFER_DECISION {
       @Override @Nullable public Boolean trySample(Object request) {
         return null;
@@ -84,6 +85,7 @@ public final class SamplerFunctions {
         return "DeferDecision";
       }
     },
+    // 从不
     NEVER_SAMPLE {
       @Override @Nullable public Boolean trySample(Object request) {
         return false;

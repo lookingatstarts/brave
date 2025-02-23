@@ -33,6 +33,7 @@ import okhttp3.Response;
 import static brave.okhttp3.TracingCallFactory.NULL_SENTINEL;
 
 /**
+ *
  * This is a network-level interceptor, which creates a new span for each attempt. Note that this
  * does not work well for high traffic servers, as the span context can be lost when under backlog.
  * In cases like that, use {@link TracingCallFactory}.

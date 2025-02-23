@@ -27,6 +27,7 @@ import java.lang.ref.WeakReference;
  * <p>{@link #context()} is cached so that externalized forms of a trace context to be swapped for
  * the one in use. It is a weak reference as otherwise it would prevent the corresponding map key
  * from being garbage collected.
+ * 进行中的span
  */
 public final class PendingSpan extends WeakReference<TraceContext> {
   final MutableSpan span;

@@ -113,23 +113,26 @@ public final class B3SingleFormat {
 
   static int writeB3SingleFormat(TraceContext context, long parentId, char[] result) {
     int pos = 0;
+    // traceIdHigh
     long traceIdHigh = context.traceIdHigh();
     if (traceIdHigh != 0L) {
       writeHexLong(result, pos, traceIdHigh);
       pos += 16;
     }
+    // traceId
     writeHexLong(result, pos, context.traceId());
     pos += 16;
     result[pos++] = '-';
+    // spanId
     writeHexLong(result, pos, context.spanId());
     pos += 16;
-
+    // sampled
     Boolean sampled = context.sampled();
     if (sampled != null) {
       result[pos++] = '-';
       result[pos++] = context.debug() ? 'd' : sampled ? '1' : '0';
     }
-
+    // parentId
     if (parentId != 0L) {
       result[pos++] = '-';
       writeHexLong(result, pos, parentId);
@@ -154,29 +157,25 @@ public final class B3SingleFormat {
    * <em>after</em> the last character in B3 single format.
    */
   @Nullable
-  public static TraceContextOrSamplingFlags parseB3SingleFormat(CharSequence value, int beginIndex,
-    int endIndex) {
+  public static TraceContextOrSamplingFlags parseB3SingleFormat(CharSequence value, int beginIndex, int endIndex) {
     int length = endIndex - beginIndex;
-
     if (length == 0) {
       Platform.get().log("Invalid input: empty", null);
       return null;
     } else if (length == 1) { // possibly sampling flags
+      // 采样标识
       SamplingFlags flags = tryParseSamplingFlags(value.charAt(beginIndex));
       return flags != null ? TraceContextOrSamplingFlags.create(flags) : null;
     } else if (length > FORMAT_MAX_LENGTH) {
       Platform.get().log("Invalid input: too long", null);
       return null;
     }
-
     long traceIdHigh = 0L, traceId = 0L, spanId = 0L, parentId = 0L;
     int flags = 0;
-
     // Assume it is a 128-bit trace ID and revise back as necessary
     int currentField = FIELD_TRACE_ID_HIGH, currentFieldLength = 0;
     // Used for hex-decoding, performed by bitwise addition
     long buffer = 0L;
-
     // Instead of pos < endIndex, this uses pos <= endIndex to keep field processing consolidated.
     // Otherwise, we'd have to process again when outside the loop to handle dangling data on EOF.
     for (int pos = beginIndex; pos <= endIndex; pos++) {

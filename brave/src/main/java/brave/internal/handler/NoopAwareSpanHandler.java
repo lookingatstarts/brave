@@ -25,8 +25,7 @@ import static brave.internal.Throwables.propagateIfFatal;
 /** This logs exceptions instead of raising an error, as the supplied collector could have bugs. */
 public final class NoopAwareSpanHandler extends SpanHandler {
   // Array ensures no iterators are created at runtime
-  public static SpanHandler create(SpanHandler[] handlers,
-      AtomicBoolean noop) {
+  public static SpanHandler create(SpanHandler[] handlers, AtomicBoolean noop) {
     if (handlers.length == 0) return SpanHandler.NOOP;
     if (handlers.length == 1) return new NoopAwareSpanHandler(handlers[0], noop);
     return new NoopAwareSpanHandler(new CompositeSpanHandler(handlers), noop);
@@ -84,6 +83,7 @@ public final class NoopAwareSpanHandler extends SpanHandler {
 
     CompositeSpanHandler(SpanHandler[] handlers) {
       this.handlers = handlers;
+      // 只要有一个放弃执行，整体放弃执行
       boolean handlesAbandoned = false;
       for (SpanHandler handler : handlers) {
         if (handler.handlesAbandoned()) {

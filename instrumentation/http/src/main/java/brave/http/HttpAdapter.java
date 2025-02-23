@@ -16,6 +16,9 @@ package brave.http;
 import brave.internal.Nullable;
 import java.net.URI;
 
+/**
+ * 适配器
+ */
 /** @deprecated Since 5.10, use {@link HttpRequest} and {@link HttpResponse} */
 @Deprecated public abstract class HttpAdapter<Req, Resp> {
   /** @see HttpRequest#method() */

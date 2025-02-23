@@ -51,6 +51,9 @@ public abstract class Platform {
     return linkLocalIp;
   }
 
+  /**
+   * 获取本级ip
+   */
   String produceLinkLocalIp() {
     try {
       Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
@@ -128,7 +131,7 @@ public abstract class Platform {
   }
 
   /**
-   * This class uses pseudo-random number generators to provision IDs.
+   * This class uses pseudo-random(伪随机) number generators to provision(提供) IDs.
    *
    * <p>This optimizes speed over full coverage of 64-bits, which is why it doesn't share a {@link
    * SecureRandom}. It will use {@link java.util.concurrent.ThreadLocalRandom} unless used in JRE 6

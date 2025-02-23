@@ -15,6 +15,9 @@ package brave.internal.codec;
 
 import brave.internal.Nullable;
 
+/**
+ * literal: 字面量
+ */
 /** Internal utility class to validate IPv4 or IPv6 literals */
 public final class IpLiteral {
 

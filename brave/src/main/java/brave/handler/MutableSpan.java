@@ -130,6 +130,9 @@ public final class MutableSpan implements Cloneable {
     if (context.shared()) setShared();
   }
 
+  /**
+   * mutable:可变的
+   */
   /** @since 5.12 */
   public MutableSpan(MutableSpan toCopy) {
     if (toCopy == null) throw new NullPointerException("toCopy == null");
@@ -852,6 +855,7 @@ public final class MutableSpan implements Cloneable {
   static final ZipkinJsonV2 JSON_ENCODER = new ZipkinJsonV2(Tags.ERROR);
 
   @Override public String toString() {
+    // 转json
     return new String(JSON_ENCODER.encode(this), UTF_8);
   }
 
@@ -899,8 +903,9 @@ public final class MutableSpan implements Cloneable {
     if (o == this) return true;
     // Hack that allows WeakConcurrentMap to lookup without allocating a new object.
     if (o instanceof WeakReference) o = ((WeakReference) o).get();
-    if (!(o instanceof MutableSpan)) return false;
-
+    if (!(o instanceof MutableSpan)){
+      return false;
+    }
     MutableSpan that = (MutableSpan) o;
     return equal(traceId, that.traceId)
         && equal(localRootId, that.localRootId)
@@ -973,16 +978,25 @@ public final class MutableSpan implements Cloneable {
     return h;
   }
 
-  @Nullable static String normalizeIdField(String field, @Nullable String id, boolean isNullable) {
+  /**
+   * normalize:正常化
+   */
+  @Nullable static String normalizeIdField(String field,
+                @Nullable String id, boolean isNullable) {
     if (id == null) {
-      if (isNullable) return null;
+      if (isNullable){
+        return null;
+      }
       throw new NullPointerException(field + " == null");
     }
     int length = id.length();
     if (length == 0) {
-      if (isNullable) return null;
+      if (isNullable) {
+        return null;
+      }
       throw new IllegalArgumentException(field + " is empty");
     }
+    // traceId支持32位长度
     int desiredLength = field.equals("traceId") && length > 16 ? 32 : 16;
     int existingPadding = validateHexAndReturnPadding(field, id, desiredLength);
     if (desiredLength == 32 && existingPadding >= 16) { // overly padded traceId
@@ -991,6 +1005,7 @@ public final class MutableSpan implements Cloneable {
     return length == desiredLength ? id : padLeft(id, desiredLength, existingPadding);
   }
 
+  // 判断前缀有几个连续的0
   static int validateHexAndReturnPadding(String field, String value, int desiredLength) {
     int length = value.length(), zeroPrefix = 0;
     if (length > desiredLength) {
@@ -999,6 +1014,7 @@ public final class MutableSpan implements Cloneable {
     boolean inZeroPrefix = value.charAt(0) == '0';
     for (int i = 0; i < length; i++) {
       char c = value.charAt(i);
+      // 16进制：0-9 a-f
       if ((c < '0' || c > '9') && (c < 'a' || c > 'f')) {
         throw new IllegalArgumentException(field + " should be lower-hex encoded with no prefix");
       }
@@ -1023,11 +1039,9 @@ public final class MutableSpan implements Cloneable {
   static String padLeft(String id, int desiredLength, int existingPadding) {
     int length = id.length();
     int remainingPadding = desiredLength < length ? 0 : desiredLength - length - existingPadding;
-
     char[] data = Platform.shortStringBuffer();
     THIRTY_TWO_ZEROS.getChars(0, desiredLength, data, 0);
     id.getChars(existingPadding, length - existingPadding, data, remainingPadding);
-
     return new String(data, 0, desiredLength);
   }
 

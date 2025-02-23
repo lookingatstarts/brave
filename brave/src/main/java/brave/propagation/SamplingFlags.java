@@ -22,6 +22,9 @@ import static brave.internal.InternalPropagation.FLAG_SAMPLED;
 import static brave.internal.InternalPropagation.FLAG_SAMPLED_LOCAL;
 import static brave.internal.InternalPropagation.FLAG_SAMPLED_SET;
 
+/**
+ * 采样标识
+ */
 //@Immutable
 public class SamplingFlags {
   public static final SamplingFlags EMPTY = new SamplingFlags(0);
@@ -35,6 +38,9 @@ public class SamplingFlags {
         return flags.flags;
       }
 
+      /**
+       * 创建新的TraceContext
+       */
       @Override
       public TraceContext newTraceContext(int flags, long traceIdHigh, long traceId,
         long localRootId, long parentId, long spanId, List<Object> extra) {
@@ -185,7 +191,9 @@ public class SamplingFlags {
     return flags;
   }
 
-  // Internal: not meant to be used directly by end users
+  /**
+   * int标识位 <-> SamplingFlags
+   */
   static final SamplingFlags
     EMPTY_SAMPLED_LOCAL = new SamplingFlags(FLAG_SAMPLED_LOCAL),
     NOT_SAMPLED_SAMPLED_LOCAL = new SamplingFlags(NOT_SAMPLED.flags | FLAG_SAMPLED_LOCAL),

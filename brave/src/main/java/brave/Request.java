@@ -31,14 +31,17 @@ import brave.sampler.SamplerFunction;
  * @since 5.9
  */
 public abstract class Request {
+
   /** The remote {@link Span.Kind} describing the direction and type of the request. */
   public abstract Span.Kind spanKind();
 
   /**
+   * 被包装的对象：HttpRequest Invocation ConsumerRecord
+   *
    * Returns the underlying request object or {@code null} if there is none. Here are some request
    * objects: {@code org.apache.http.HttpRequest}, {@code org.apache.dubbo.rpc.Invocation}, {@code
    * org.apache.kafka.clients.consumer.ConsumerRecord}.
-   *
+   * 一些实现可能会返回多种类型(实现类继承了多种类型)
    * <p>Note: Some implementations are composed of multiple types, such as a request and a socket
    * address of the client. Moreover, an implementation may change the type returned due to
    * refactoring. Unless you control the implementation, cast carefully (ex using {@code
@@ -51,7 +54,9 @@ public abstract class Request {
   @Override public String toString() {
     Object unwrapped = unwrap();
     // handles case where unwrap() returning this or null: don't NPE or stack overflow!
-    if (unwrapped == null || unwrapped == this) return getClass().getSimpleName();
+    if (unwrapped == null || unwrapped == this){
+      return getClass().getSimpleName();
+    }
     return getClass().getSimpleName() + "{" + unwrapped + "}";
   }
 

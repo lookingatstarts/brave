@@ -27,6 +27,7 @@ import java.util.List;
  */
 public abstract class InternalPropagation {
   /**
+   * 采样位标识
    * A flags bitfield is used internally inside {@link TraceContext} as opposed to several booleans.
    * This reduces the size of the object and allows us to set or check a couple states at once.
    */
@@ -39,8 +40,14 @@ public abstract class InternalPropagation {
 
   public static InternalPropagation instance;
 
+  /**
+   * 设置采样标识
+   */
   public abstract int flags(SamplingFlags flags);
 
+  /**
+   * 标记已采样
+   */
   public static int sampled(boolean sampled, int flags) {
     if (sampled) {
       flags |= FLAG_SAMPLED | FLAG_SAMPLED_SET;

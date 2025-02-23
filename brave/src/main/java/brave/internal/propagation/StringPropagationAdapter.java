@@ -78,9 +78,10 @@ public final class StringPropagationAdapter<K> implements Propagation<K> {
     if (keyFactory == KeyFactory.STRING) return (Propagation<K>) delegate;
     return new StringPropagationAdapter<>(delegate, keyFactory);
   }
-
+  // 静态代理
   final Propagation<String> delegate;
   final KeyFactory<K> keyFactory;
+  // map<原名称，新名称>
   final Map<String, K> map;
   final List<K> keysList;
 
@@ -93,6 +94,7 @@ public final class StringPropagationAdapter<K> implements Propagation<K> {
 
   List<K> toKeyList(List<String> keyNames, KeyFactory<K> keyFactory) {
     int length = keyNames.size();
+    // 可以通过keyFactory重命名key
     K[] keys = (K[]) new Object[length];
     for (int i = 0; i < length; i++) {
       String keyName = keyNames.get(i);
@@ -170,6 +172,7 @@ public final class StringPropagationAdapter<K> implements Propagation<K> {
     }
   }
 
+  // Setter适配器 R：request K: key
   static final class SetterAdapter<R, K> implements Setter<R, String> {
     final Setter<R, K> setter;
     final Map<String, K> map;

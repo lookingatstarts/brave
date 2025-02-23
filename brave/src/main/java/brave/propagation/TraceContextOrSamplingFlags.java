@@ -44,6 +44,9 @@ import static java.util.Collections.emptyList;
  * <p>If your propagation implementation needs additional state, append it via {@link
  * Builder#addExtra(Object)}.
  *
+ * 1、TraceContext
+ * 2、TraceIdContext
+ * 3、SamplingFlags
  *
  * <p>This started as a port of {@code com.github.kristofa.brave.TraceData}, which served the same
  * purpose.
@@ -53,11 +56,11 @@ import static java.util.Collections.emptyList;
  */
 //@Immutable
 public final class TraceContextOrSamplingFlags {
-  public static final TraceContextOrSamplingFlags
-    EMPTY = new TraceContextOrSamplingFlags(3, SamplingFlags.EMPTY, emptyList()),
-    NOT_SAMPLED = new TraceContextOrSamplingFlags(3, SamplingFlags.NOT_SAMPLED, emptyList()),
-    SAMPLED = new TraceContextOrSamplingFlags(3, SamplingFlags.SAMPLED, emptyList()),
-    DEBUG = new TraceContextOrSamplingFlags(3, SamplingFlags.DEBUG, emptyList());
+
+  public static final TraceContextOrSamplingFlags EMPTY = new TraceContextOrSamplingFlags(3, SamplingFlags.EMPTY, emptyList());
+  public static final TraceContextOrSamplingFlags NOT_SAMPLED = new TraceContextOrSamplingFlags(3, SamplingFlags.NOT_SAMPLED, emptyList());
+  public static final TraceContextOrSamplingFlags SAMPLED = new TraceContextOrSamplingFlags(3, SamplingFlags.SAMPLED, emptyList());
+  public static final TraceContextOrSamplingFlags DEBUG = new TraceContextOrSamplingFlags(3, SamplingFlags.DEBUG, emptyList());
 
   /**
    * Used to implement {@link Extractor#extract(Object)} for a format that can extract a complete
@@ -193,8 +196,10 @@ public final class TraceContextOrSamplingFlags {
    * @since 5.2
    */
   public TraceContextOrSamplingFlags sampled(boolean sampled) {
+    // 是否采样
     Boolean thisSampled = sampled();
     if (thisSampled != null && thisSampled.equals(sampled)) return this;
+    // 获取采样标识
     int flags = InternalPropagation.sampled(sampled, value.flags);
     if (flags == value.flags) return this; // save effort if no change
     return withFlags(flags);
@@ -421,6 +426,7 @@ public final class TraceContextOrSamplingFlags {
   }
 
   TraceContextOrSamplingFlags withFlags(int flags) {
+    // 由于flags字段在TraceContext TraceIdContext SamplingFlags对象final修改，只能重新创建对象
     switch (type) {
       case 1:
         TraceContext context = InternalPropagation.instance.withFlags((TraceContext) value, flags);

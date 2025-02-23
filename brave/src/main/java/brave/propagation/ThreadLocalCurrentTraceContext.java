@@ -36,8 +36,11 @@ import brave.internal.Nullable;
  *
  * <p>If you want a different behavior, use a different subtype of {@link CurrentTraceContext},
  * possibly your own, or raise an issue and explain what your use case is.
+ *
+ * 基于ThreadLocal使用的CurrentTraceContext
  */
-public class ThreadLocalCurrentTraceContext extends CurrentTraceContext { // not final for backport
+public class ThreadLocalCurrentTraceContext extends CurrentTraceContext {// not final for backport
+
   public static CurrentTraceContext create() {
     return new Builder(DEFAULT).build();
   }
@@ -57,6 +60,7 @@ public class ThreadLocalCurrentTraceContext extends CurrentTraceContext { // not
     local.remove();
   }
 
+
   /** @since 5.11 */ // overridden for covariance
   public static final class Builder extends CurrentTraceContext.Builder {
     final ThreadLocal<TraceContext> local;
@@ -74,6 +78,9 @@ public class ThreadLocalCurrentTraceContext extends CurrentTraceContext { // not
     }
   }
 
+  /**
+   * 保存TraceContext
+   */
   static final ThreadLocal<TraceContext> DEFAULT = new ThreadLocal<>();
 
   @SuppressWarnings("ThreadLocalUsage") // intentional: to support multiple Tracer instances
@@ -82,7 +89,9 @@ public class ThreadLocalCurrentTraceContext extends CurrentTraceContext { // not
 
   ThreadLocalCurrentTraceContext(Builder builder) {
     super(builder);
-    if (builder.local == null) throw new NullPointerException("local == null");
+    if (builder.local == null) {
+      throw new NullPointerException("local == null");
+    }
     local = builder.local;
     revertToNull = new RevertToNullScope(local);
   }
@@ -91,13 +100,20 @@ public class ThreadLocalCurrentTraceContext extends CurrentTraceContext { // not
     return local.get();
   }
 
+  /**
+   * 新创建一个scope
+   */
   @Override public Scope newScope(@Nullable TraceContext currentSpan) {
     final TraceContext previous = local.get();
     local.set(currentSpan);
-    Scope result = previous != null ? new RevertToPreviousScope(local, previous) : revertToNull;
+    Scope result = (previous != null) ? new RevertToPreviousScope(local, previous) : revertToNull;
+    // 增强scope
     return decorateScope(currentSpan, result);
   }
 
+  /**
+   * revert到null
+   */
   static final class RevertToNullScope implements Scope {
     final ThreadLocal<TraceContext> local;
 
@@ -110,6 +126,9 @@ public class ThreadLocalCurrentTraceContext extends CurrentTraceContext { // not
     }
   }
 
+  /**
+   * revert到前一个TranceContext
+   */
   static final class RevertToPreviousScope implements Scope {
     final ThreadLocal<TraceContext> local;
     final TraceContext previous;

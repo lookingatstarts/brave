@@ -46,9 +46,14 @@ public final class BaggageFields {
   public static final BaggageField TRACE_ID = new BaggageField("traceId", new TraceId());
 
   static final class TraceId extends BaggageContext.ReadOnly {
+    // 获取traceId
     @Override public String getValue(BaggageField field, TraceContextOrSamplingFlags extracted) {
-      if (extracted.context() != null) return getValue(field, extracted.context());
-      if (extracted.traceIdContext() != null) return extracted.traceIdContext().traceIdString();
+      if (extracted.context() != null) {
+        return getValue(field, extracted.context());
+      }
+      if (extracted.traceIdContext() != null){
+        return extracted.traceIdContext().traceIdString();
+      }
       return null;
     }
 
@@ -67,7 +72,9 @@ public final class BaggageFields {
 
   static final class ParentId extends BaggageContext.ReadOnly {
     @Override public String getValue(BaggageField field, TraceContextOrSamplingFlags extracted) {
-      if (extracted.context() != null) return getValue(field, extracted.context());
+      if (extracted.context() != null){
+        return getValue(field, extracted.context());
+      }
       return null;
     }
 
@@ -86,7 +93,9 @@ public final class BaggageFields {
 
   static final class SpanId extends BaggageContext.ReadOnly {
     @Override public String getValue(BaggageField field, TraceContextOrSamplingFlags extracted) {
-      if (extracted.context() != null) return getValue(field, extracted.context());
+      if (extracted.context() != null) {
+        return getValue(field, extracted.context());
+      }
       return null;
     }
 
@@ -106,6 +115,7 @@ public final class BaggageFields {
   public static final BaggageField SAMPLED = new BaggageField("sampled", new Sampled());
 
   static final class Sampled extends BaggageContext.ReadOnly {
+
     @Override public String getValue(BaggageField field, TraceContextOrSamplingFlags extracted) {
       return getValue(extracted.sampled());
     }
@@ -133,7 +143,11 @@ public final class BaggageFields {
     return new BaggageField(name, new Constant(value));
   }
 
+  /**
+   * 指定的常量值
+   */
   static final class Constant extends BaggageContext.ReadOnly {
+
     @Nullable final String value;
 
     Constant(String value) {

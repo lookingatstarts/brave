@@ -37,11 +37,11 @@ import brave.internal.Nullable;
 // This implies we cannot add new methods later, as the bytecode level of Brave core is 1.6
 public interface SamplerFunction<T> {
   /**
-   * Returns an overriding sampling decision for a new trace. Returning null is typically used to
-   * defer to the {@link brave.Tracing#sampler() trace ID sampler}.
+   * Returns an overriding sampling decision for a new trace.
+   * Returning null is typically used to defer to the {@link brave.Tracing#sampler() trace ID sampler}.
    *
    * @param arg parameter to evaluate for a sampling decision. null input results in a null result
-   * @return true to sample a new trace or false to deny. Null defers the decision.
+   * @return true to sample a new trace or false to deny. Null defers(推迟) the decision.
    * @since 5.8
    */
   @Nullable Boolean trySample(@Nullable T arg);

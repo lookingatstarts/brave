@@ -23,16 +23,17 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 /**
- * This makes a given span the current span by placing it in scope (usually but not always a thread
- * local scope).
- *
+ * This makes a given span(跨度) the current span by placing it in scope(范围) (usually but not always a thread local scope).
+ * 通常但不总是线程内范围
  * <p>This type is an SPI, and intended to be used by implementors looking to change thread-local
  * storage, or integrate with other contexts such as logging (MDC).
- *
+ * 这个类型是SPI，为了供更改线程thread-local存储或其他上下文(比如日志记录(MDC))集成的实现者使用
  * <h3>Design</h3>
  *
- * This design was inspired by com.google.instrumentation.trace.ContextUtils,
+ * This design was inspired(启发) by com.google.instrumentation.trace.ContextUtils,
  * com.google.inject.servlet.RequestScoper and com.github.kristofa.brave.CurrentSpan
+ *
+ * 对线程池也有支持
  */
 public abstract class CurrentTraceContext {
   static {
@@ -40,10 +41,12 @@ public abstract class CurrentTraceContext {
     SamplingFlags.DEBUG.toString();
   }
 
+  /**
+   * 创建CurrentTraceContext的builder模式
+   */
   /** Implementations of this allow standardized configuration, for example scope decoration. */
   public abstract static class Builder {
     ArrayList<ScopeDecorator> scopeDecorators = new ArrayList<>();
-
     /**
      * Implementations call decorators in order to add features like log correlation to a scope.
      *
@@ -51,7 +54,9 @@ public abstract class CurrentTraceContext {
      */
     public Builder addScopeDecorator(ScopeDecorator scopeDecorator) {
       if (scopeDecorator == null) throw new NullPointerException("scopeDecorator == null");
-      if (scopeDecorator == ScopeDecorator.NOOP) return this;
+      if (scopeDecorator == ScopeDecorator.NOOP) {
+        return this;
+      }
       this.scopeDecorators.add(scopeDecorator);
       return this;
     }
@@ -62,7 +67,6 @@ public abstract class CurrentTraceContext {
   /**
    * 获取当前线程的TraceContext
    */
-  /** Returns the current span in scope or null if there isn't one. */
   public abstract @Nullable TraceContext get();
 
   /**
@@ -73,6 +77,9 @@ public abstract class CurrentTraceContext {
    */
   public abstract Scope newScope(@Nullable TraceContext context);
 
+  /**
+   * currentTranceContext中的属性
+   */
   final ScopeDecorator[] scopeDecorators;
 
   protected CurrentTraceContext() {
@@ -101,7 +108,8 @@ public abstract class CurrentTraceContext {
    *     // ensure scope hooks are attached to the result
    *     return decorateScope(currentSpan, result);
    *   }
-   * }</pre>
+   * }
+   * </pre>
    *
    * @param scope {@link Scope#NOOP} if the prior context was equal to the {@code context}
    * parameter.
@@ -115,17 +123,30 @@ public abstract class CurrentTraceContext {
 
   /**
    * Like {@link #newScope(TraceContext)}, except returns {@link Scope#NOOP} if the given context is
-   * already in scope. This can reduce overhead when scoping callbacks. However, this will not apply
-   * any changes, notably in {@link TraceContext#extra()}. As such, it should be used carefully and
-   * only in conditions where redundancy is possible and the intent is primarily to facilitate
-   * {@link Tracer#currentSpan}. Most often, this is used to eliminate redundant scopes by
-   * wrappers.
+   * already in scope.
+   * 与newScope一样，预期返回Scope#noop，如果context已经在范围内。
+   * This can reduce overhead when scoping callbacks.
+   * 可以减少scope内回调开票
+   * However, this will not apply(应用) any changes, notably(尤其) in {@link TraceContext#extra()}.
+   * 然而，
+   * As such, it should be used carefully(要谨慎使用) and
+   * only in conditions where redundancy(冗余) is possible and the intent(目的) is primarily(主要) to facilitate(促进)
+   * {@link Tracer#currentSpan}.
+   * 并且尽在可能冗余的情况下使用，主要目的是促进Tracer#currentSpan
+   *
+   * Most often, this is used to eliminate redundant scopes by wrappers.
+   * 大多数情况下，用于消除包装器冗余范围
    *
    * <p>For example, RxJava includes hooks to wrap types that represent an asynchronous functional
    * composition. For example, {@code flowable.parallel().flatMap(Y).sequential()} Assembly hooks
-   * can ensure each stage of this operation can see the initial trace context. However, other tools
-   * can also instrument the stages, including vert.x or even agent instrumentation. When wrapping
-   * callbacks, it can reduce overhead to use {@code maybeScope} as opposed to {@code newScope}.
+   * can ensure each stage(阶段) of this operation(操作) can see the initial trace context.
+   * However, other tools can also instrument the stages, including vert.x or even agent instrumentation.
+   * When wrapping callbacks, it can reduce overhead to use {@code maybeScope} as opposed to {@code newScope}.
+   *
+   * 例如，RxJava包含用于包装表示异步函数的类型的钩子组成。
+   * 例如，{@code flowable.parallel（）.flatMap（Y）.sequential（）} 组装钩子
+   *  可以确保此作的每个阶段都可以看到初始跟踪上下文。但是，其他工具还可以检测阶段，包括 vert.x 甚至代理检测。
+   *  包装时回调，它可以减少使用 {@code maybeScope} 而不是 {@code newScope} 的开销。
    *
    * <p>Generally speaking, this is best used for wrappers, such as executor services or lifecycle
    * hooks, which usually have no current trace context when invoked.
@@ -141,11 +162,13 @@ public abstract class CurrentTraceContext {
    */
   public Scope maybeScope(@Nullable TraceContext context) {
     TraceContext current = get();
-    if (equals(current, context)) return decorateScope(context, Scope.NOOP);
+    if (equals(current, context)) {
+      return decorateScope(context, Scope.NOOP);
+    }
     return newScope(context);
   }
 
-  /** A span remains in the scope it was bound to until close is called. */
+  /** A span remains(仍然) in the scope it was bound to until close is called. */
   public interface Scope extends Closeable {
     /**
      * Returned when {@link CurrentTraceContext#maybeScope(TraceContext)} detected scope
@@ -167,6 +190,7 @@ public abstract class CurrentTraceContext {
   /**
    * Use this to add features such as thread checks or log correlation when a scope is created or
    * closed.
+   * 通过装饰器可以新增一个功能：当scope被创建或关闭，可以执行一些线程检查或记录相关日志的特性
    *
    * <p>While decoration technically occurs with {@link #newScope(TraceContext)} or
    * {@link #maybeScope(TraceContext)}, many tools use these underneath. For example, {@link
@@ -220,6 +244,7 @@ public abstract class CurrentTraceContext {
    */
   public static final class Default extends ThreadLocalCurrentTraceContext {
     // Inheritable as Brave 3's ThreadLocalServerClientAndLocalSpanState was inheritable
+    // 可继承的ThreadLocal
     static final InheritableThreadLocal<TraceContext> INHERITABLE = new InheritableThreadLocal<>();
 
     /** Uses a non-inheritable static thread local */
@@ -247,9 +272,11 @@ public abstract class CurrentTraceContext {
 
   /** Wraps the input so that it executes with the same context as now. */
   public <C> Callable<C> wrap(Callable<C> task) {
+    // 当前上线文
     final TraceContext invocationContext = get();
     class CurrentTraceContextCallable implements Callable<C> {
       @Override public C call() throws Exception {
+        // scope实现了Closeable,try-resource会自动执行close方法
         try (Scope scope = maybeScope(invocationContext)) {
           return task.call();
         }
@@ -278,6 +305,7 @@ public abstract class CurrentTraceContext {
   public Executor executor(Executor delegate) {
     class CurrentTraceContextExecutor implements Executor {
       @Override public void execute(Runnable task) {
+        // 包装task
         delegate.execute(CurrentTraceContext.this.wrap(task));
       }
     }

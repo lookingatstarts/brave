@@ -125,7 +125,9 @@ public class Tracer {
    * #startScopedSpan(String, SamplerFunction, Object)}
    */
   @Deprecated public Tracer withSampler(Sampler sampler) {
-    if (sampler == null) throw new NullPointerException("sampler == null");
+    if (sampler == null){
+      throw new NullPointerException("sampler == null");
+    }
     return new Tracer(
       clock,
       propagationFactory,
@@ -142,6 +144,7 @@ public class Tracer {
 
   /**
    * Explicitly creates a new trace. The result will be a root span (no parent span ID).
+   * root span没有parentSpanId
    *
    * <p>To implicitly create a new trace, or a span within an existing one, use {@link
    * #nextSpan()}.
@@ -179,8 +182,9 @@ public class Tracer {
    */
   public final Span joinSpan(TraceContext context) {
     if (context == null) throw new NullPointerException("context == null");
-    if (!supportsJoin) return newChild(context);
-
+    if (!supportsJoin){
+      return newChild(context);
+    }
     // set shared flag if not already done
     int flags = InternalPropagation.instance.flags(context);
     if (!context.shared()) {
@@ -262,24 +266,24 @@ public class Tracer {
     long localRootId,
     long parentId,
     long spanId,
-    List<Object> extra
-  ) {
+    List<Object> extra) {
     if (alwaysSampleLocal && (flags & FLAG_SAMPLED_LOCAL) != FLAG_SAMPLED_LOCAL) {
       flags |= FLAG_SAMPLED_LOCAL;
     }
-
-    if (spanId == 0L) spanId = nextId();
-
-    if (traceId == 0L) { // make a new trace ID
+    // 生成spanID
+    if (spanId == 0L) {
+      spanId = nextId();
+    }
+    // 生产traceId
+    if (traceId == 0L) {
       traceIdHigh = traceId128Bit ? Platform.get().nextTraceIdHigh() : 0L;
       traceId = spanId;
     }
-
+    // 设置标识
     if ((flags & FLAG_SAMPLED_SET) != FLAG_SAMPLED_SET) { // cheap check for not yet sampled
       flags = InternalPropagation.sampled(sampler.isSampled(traceId), flags);
       flags &= ~FLAG_SHARED; // cannot be shared if not yet sampled
     }
-
     // Zero when root or an externally managed context was passed to newChild or scopedWithParent
     if (localRootId == 0L) {
       localRootId = spanId;
@@ -287,6 +291,7 @@ public class Tracer {
     } else {
       flags &= ~FLAG_LOCAL_ROOT;
     }
+    // 创建TraceContext
     return propagationFactory.decorate(InternalPropagation.instance.newTraceContext(
       flags,
       traceIdHigh,
@@ -404,14 +409,18 @@ public class Tracer {
   }
 
   Span _toSpan(@Nullable TraceContext parent, TraceContext context) {
-    if (isNoop(context)) return new NoopSpan(context);
-
+    // 什么都不做NoopSpan
+    if (isNoop(context)){
+      return new NoopSpan(context);
+    }
     // allocate a mutable span in case multiple threads call this method.. they'll use the same data
     PendingSpan pendingSpan = pendingSpans.getOrCreate(parent, context, false);
     TraceContext pendingContext = pendingSpan.context();
     // A lost race of Tracer.toSpan(context) is the only known situation where "context" won't be
     // the same as pendingSpan.context()
-    if (pendingContext != null) context = pendingContext;
+    if (pendingContext != null){
+      context = pendingContext;
+    }
     return new RealSpan(context, pendingSpans, pendingSpan.state(), pendingSpan.clock());
   }
 

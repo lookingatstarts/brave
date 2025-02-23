@@ -18,8 +18,12 @@ import brave.internal.Nullable;
 import brave.propagation.TraceContext;
 import brave.propagation.TraceContextOrSamplingFlags;
 
+/**
+ * 修改/获取追踪信息字段值
+ */
 /** Internal type that implements context storage for the field. */
 public abstract class BaggageContext {
+
   @Nullable
   public abstract String getValue(BaggageField field, TraceContextOrSamplingFlags extracted);
 
@@ -33,10 +37,13 @@ public abstract class BaggageContext {
   public abstract boolean updateValue(BaggageField field, TraceContext context,
     @Nullable String value);
 
+  /**
+   * 只读权限
+   */
   /** Appropriate for constants or immutable fields defined in {@link TraceContext}. */
   public static abstract class ReadOnly extends BaggageContext {
-    @Override public boolean updateValue(BaggageField field, TraceContextOrSamplingFlags extracted,
-      @Nullable String value) {
+
+    @Override public boolean updateValue(BaggageField field, TraceContextOrSamplingFlags extracted, @Nullable String value) {
       return false;
     }
 

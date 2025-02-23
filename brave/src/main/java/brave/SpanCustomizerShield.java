@@ -15,6 +15,7 @@ package brave;
 
 /** This reduces exposure of methods on {@link Span} to those exposed on {@link SpanCustomizer}. */
 final class SpanCustomizerShield implements SpanCustomizer {
+
   final Span delegate;
 
   SpanCustomizerShield(Span delegate) {

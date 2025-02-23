@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public final class TracingFilter implements Filter {
+
   public static Filter create(Tracing tracing) {
     return new TracingFilter(HttpTracing.create(tracing));
   }
@@ -58,7 +59,6 @@ public final class TracingFilter implements Filter {
     throws IOException, ServletException {
     HttpServletRequest req = (HttpServletRequest) request;
     HttpServletResponse res = servlet.httpServletResponse(response);
-
     // Prevent duplicate spans for the same request
     TraceContext context = (TraceContext) request.getAttribute(TraceContext.class.getName());
     if (context != null) {
@@ -71,15 +71,12 @@ public final class TracingFilter implements Filter {
       }
       return;
     }
-
     Span span = handler.handleReceive(new HttpServletRequestWrapper(req));
-
     // Add attributes for explicit access to customization or span context
     request.setAttribute(SpanCustomizer.class.getName(), span.customizer());
     request.setAttribute(TraceContext.class.getName(), span.context());
     SendHandled sendHandled = new SendHandled();
     request.setAttribute(SendHandled.class.getName(), sendHandled);
-
     Throwable error = null;
     Scope scope = currentTraceContext.newScope(span.context());
     try {

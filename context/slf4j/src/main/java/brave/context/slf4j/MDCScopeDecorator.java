@@ -40,6 +40,7 @@ import org.slf4j.MDC;
  * @since 5.2
  */
 public final class MDCScopeDecorator {
+
   static final CurrentTraceContext.ScopeDecorator INSTANCE = new Builder().build();
 
   /**
@@ -85,6 +86,9 @@ public final class MDCScopeDecorator {
     }
   }
 
+  /**
+   * MDC上下文
+   */
   enum MDCContext implements CorrelationContext {
     INSTANCE;
 

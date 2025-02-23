@@ -27,9 +27,12 @@ import brave.propagation.TraceContext;
  */
 public abstract class HttpRequest extends Request {
   /**
+   * 请求发出的时间，0表示从系统时钟取值
    * The timestamp in epoch microseconds of the beginning of this request or zero to take this
    * implicitly from the current clock. Defaults to zero.
    *
+   * 这个字段在两种情况下很有用：
+   * 1、延迟解析和避免冗余的时间戳开销
    * <p>This is helpful in two scenarios: late parsing and avoiding redundant timestamp overhead.
    * If a server span, this helps reach the "original" beginning of the request, which is always
    * prior to parsing.
@@ -50,7 +53,7 @@ public abstract class HttpRequest extends Request {
 
   /**
    * The HTTP method, or verb, such as "GET" or "POST".
-   *
+   * 请求方式
    * <p>Conventionally associated with the key "http.method"
    *
    * <h3>Note</h3>
@@ -64,7 +67,7 @@ public abstract class HttpRequest extends Request {
 
   /**
    * The absolute http path, without any query parameters. Ex. "/objects/abcd-ff"
-   *
+   * 请求url
    * <p>Conventionally associated with the key "http.path"
    *
    * <p>{@code null} could mean not applicable to the HTTP method (ex CONNECT).
@@ -79,6 +82,8 @@ public abstract class HttpRequest extends Request {
    * Returns an expression such as "/items/:itemId" representing an application endpoint,
    * conventionally associated with the tag key "http.route". If no route matched, "" (empty string)
    * is returned. Null indicates this instrumentation doesn't understand http routes.
+   *  返回items/:itemId 的格式，表示应用程序端点。方便和http.route标签关联
+   *  route和请求关联，但在响应处理之前可能不可见。因为很多server的实现在识别route之前就处理了请求
    *
    * <p>The route is associated with the request, but it may not be visible until response
    * processing. The reasons is that many server implementations process the request before they can
@@ -98,7 +103,7 @@ public abstract class HttpRequest extends Request {
    * unreadable.
    *
    * <p>Conventionally associated with the key "http.url"
-   *
+   * 完整的请求连接
    * @see #path()
    * @see HttpResponse#route()
    * @see HttpTags#URL

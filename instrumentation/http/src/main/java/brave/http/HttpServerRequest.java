@@ -24,7 +24,9 @@ import brave.propagation.Propagation.RemoteGetter;
  * @since 5.7
  */
 public abstract class HttpServerRequest extends HttpRequest {
+
   static final RemoteGetter<HttpServerRequest> GETTER = new RemoteGetter<HttpServerRequest>() {
+    // server端
     @Override public Span.Kind spanKind() {
       return Span.Kind.SERVER;
     }

@@ -50,23 +50,33 @@ import zipkin2.reporter.brave.ZipkinSpanHandler;
  * for example via spring or when mocking.
  */
 public abstract class Tracing implements Closeable {
+
+  /**
+   * Tracing单粒模式
+   */
   static final AtomicReference<Tracing> CURRENT = new AtomicReference<>();
 
   public static Builder newBuilder() {
     return new Builder();
   }
 
+  /**
+   * Tracing创建tracer，通过tracer创建Span
+   * 创建tracer
+   */
   /** All tracing commands start with a {@link Span}. Use a tracer to create spans. */
   abstract public Tracer tracer();
 
   /**
+   * 当一个追踪链路离开当前进程时，需要使用Propagation将追踪信息注入到请求头，从remote请求注入或提取这些信息
    * When a trace leaves the process, it needs to be propagated, usually via headers. This utility
    * is used to inject or extract a trace context from remote requests.
    */
   public abstract Propagation<String> propagation();
 
   /** @deprecated Since 5.12 use {@link #propagation()} as non-string keys are unsupported. */
-  @Deprecated public abstract Propagation.Factory propagationFactory();
+  @Deprecated
+  public abstract Propagation.Factory propagationFactory();
 
   /**
    * Sampler is responsible for deciding if a particular trace should be "sampled", i.e. whether the
@@ -77,6 +87,7 @@ public abstract class Tracing implements Closeable {
   abstract public Sampler sampler();
 
   /**
+   * 用于支持进程内传播，通常是线程内传播
    * This supports in-process propagation, typically across thread boundaries. This includes
    * utilities for concurrent types like {@linkplain java.util.concurrent.ExecutorService}.
    */
@@ -140,16 +151,18 @@ public abstract class Tracing implements Closeable {
 
   public static final class Builder {
     final MutableSpan defaultSpan = new MutableSpan();
+    // zipkin span上报器
     Object zipkinSpanReporter; // avoid Zipkin type
     Clock clock;
     Sampler sampler = Sampler.ALWAYS_SAMPLE;
     CurrentTraceContext currentTraceContext = CurrentTraceContext.Default.inheritable();
     boolean traceId128Bit = false, supportsJoin = true;
-    boolean alwaysSampleLocal = false, alwaysReportSpans = false, trackOrphans = false;
+    boolean alwaysSampleLocal = false;
+    boolean alwaysReportSpans = false;
+    boolean trackOrphans = false;
     Propagation.Factory propagationFactory = B3Propagation.FACTORY;
     ErrorParser errorParser = new ErrorParser();
     Set<SpanHandler> spanHandlers = new LinkedHashSet<>(); // dupes not ok
-
     Builder() {
       defaultSpan.localServiceName("unknown");
     }
@@ -441,6 +454,7 @@ public abstract class Tracing implements Closeable {
     }
   }
 
+  // 输出日志
   static final class LogSpanHandler extends SpanHandler {
     final Logger logger = Logger.getLogger(Tracer.class.getName());
 
@@ -473,11 +487,9 @@ public abstract class Tracing implements Closeable {
       this.currentTraceContext = builder.currentTraceContext;
       this.sampler = builder.sampler;
       this.noop = new AtomicBoolean();
-
       MutableSpan defaultSpan = new MutableSpan(builder.defaultSpan); // safe copy
-
       Set<SpanHandler> spanHandlers = new LinkedHashSet<>(builder.spanHandlers);
-      // When present, the Zipkin handler is invoked after the user-supplied ones.
+      // 配置Reporter，则创建ZipkinSpanHandler
       if (builder.zipkinSpanReporter != null) {
         spanHandlers.add(
             ZipkinSpanHandler.newBuilder((Reporter<zipkin2.Span>) builder.zipkinSpanReporter)
@@ -485,15 +497,14 @@ public abstract class Tracing implements Closeable {
                 .alwaysReportSpans(builder.alwaysReportSpans)
                 .build());
       }
-      if (spanHandlers.isEmpty()) spanHandlers.add(new LogSpanHandler());
+      if (spanHandlers.isEmpty()){
+        spanHandlers.add(new LogSpanHandler());
+      }
       if (builder.trackOrphans) {
         spanHandlers.add(OrphanTracker.newBuilder().defaultSpan(defaultSpan).clock(clock).build());
       }
-
-      // Make sure any exceptions caused by span handlers don't crash callers
-      SpanHandler spanHandler =
-        NoopAwareSpanHandler.create(spanHandlers.toArray(new SpanHandler[0]), noop);
-
+      // 将多个SpanHandler伪装成一个SpanHandler
+      SpanHandler spanHandler = NoopAwareSpanHandler.create(spanHandlers.toArray(new SpanHandler[0]), noop);
       boolean alwaysSampleLocal = builder.alwaysSampleLocal;
       for (SpanHandler handler : spanHandlers) {
         if (handler instanceof FinishedSpanHandler) {
@@ -501,7 +512,6 @@ public abstract class Tracing implements Closeable {
           if (((FinishedSpanHandler)handler).alwaysSampleLocal()) alwaysSampleLocal = true;
         }
       }
-
       this.tracer = new Tracer(
         builder.clock,
         builder.propagationFactory,

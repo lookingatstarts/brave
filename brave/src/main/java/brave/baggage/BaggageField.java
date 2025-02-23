@@ -94,6 +94,10 @@ import java.util.Map;
  * these papers are different to the implementation here, but conceptually the goal is the same: to
  * propagate "arbitrary stuff" with a request.
  *
+ * 在链路追踪中用来传递其他额外的字段(传递自定义的上下文数据)，
+ * eg:用户ID，请求ID或者其他自定义数据，这些信息不会用来构建调用链路的结构，
+ * 但是可以方便监控，调试，日志记录
+ *
  * @see BaggagePropagation
  * @see CorrelationScopeConfig
  * @since 5.11
@@ -231,7 +235,9 @@ public final class BaggageField {
     return getByName(currentTraceContext(), name);
   }
 
+  // 名称
   final String name, lcName;
+  // 上下文
   final BaggageContext context;
 
   BaggageField(String name, BaggageContext context) { // sealed to this package

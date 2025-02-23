@@ -131,7 +131,6 @@ public final class TraceIdContext extends SamplingFlags {
       if (traceId == 0L) throw new IllegalStateException("Missing: traceId");
       return new TraceIdContext(flags, traceIdHigh, traceId);
     }
-
     Builder() { // no external implementations
     }
   }

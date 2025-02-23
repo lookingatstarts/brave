@@ -130,6 +130,7 @@ public interface Propagation<K> {
    */
   @Deprecated
   interface KeyFactory<K> {
+    // String实现方法
     KeyFactory<String> STRING = new KeyFactory<String>() { // retrolambda no likey
       @Override public String create(String name) {
         return name;
@@ -140,6 +141,7 @@ public interface Propagation<K> {
       }
     };
 
+    // 创建一个key
     K create(String name);
   }
 

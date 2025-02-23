@@ -30,6 +30,7 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.HttpStatusCodeException;
 
 public final class TracingClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
+
   public static ClientHttpRequestInterceptor create(Tracing tracing) {
     return create(HttpTracing.create(tracing));
   }
@@ -41,12 +42,14 @@ public final class TracingClientHttpRequestInterceptor implements ClientHttpRequ
   final CurrentTraceContext currentTraceContext;
   final HttpClientHandler<brave.http.HttpClientRequest, HttpClientResponse> handler;
 
-  @Autowired TracingClientHttpRequestInterceptor(HttpTracing httpTracing) {
+  @Autowired
+  TracingClientHttpRequestInterceptor(HttpTracing httpTracing) {
     currentTraceContext = httpTracing.tracing().currentTraceContext();
     handler = HttpClientHandler.create(httpTracing);
   }
 
-  @Override public ClientHttpResponse intercept(HttpRequest req, byte[] body,
+  @Override
+  public ClientHttpResponse intercept(HttpRequest req, byte[] body,
     ClientHttpRequestExecution execution) throws IOException {
     HttpRequestWrapper request = new HttpRequestWrapper(req);
     Span span = handler.handleSend(request);
@@ -62,7 +65,9 @@ public final class TracingClientHttpRequestInterceptor implements ClientHttpRequ
     }
   }
 
+  // 包装类：静态代理
   static final class HttpRequestWrapper extends brave.http.HttpClientRequest {
+
     final HttpRequest delegate;
 
     HttpRequestWrapper(HttpRequest delegate) {
@@ -95,6 +100,7 @@ public final class TracingClientHttpRequestInterceptor implements ClientHttpRequ
     }
   }
 
+  // 静态代理
   static final class ClientHttpResponseWrapper extends HttpClientResponse {
     final HttpRequestWrapper request;
     @Nullable final ClientHttpResponse response;

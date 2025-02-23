@@ -45,7 +45,6 @@ public class WeakConcurrentMap<K, V> extends ReferenceQueue<K> {
   @Nullable public V getIfPresent(K key) {
     if (key == null) throw new NullPointerException("key == null");
     expungeStaleEntries();
-
     return target.get(key);
   }
 
@@ -54,13 +53,13 @@ public class WeakConcurrentMap<K, V> extends ReferenceQueue<K> {
     if (key == null) throw new NullPointerException("key == null");
     if (value == null) throw new NullPointerException("value == null");
     expungeStaleEntries();
-
     return target.putIfAbsent(new WeakKey<>(key, this), value);
   }
 
   /** Removes the entry with the indicated key and returns the old value or {@code null}. */
   @Nullable public V remove(K key) {
-    if (key == null) throw new NullPointerException("key == null");
+    if (key == null)
+      throw new NullPointerException("key == null");
     expungeStaleEntries();
 
     return target.remove(key);

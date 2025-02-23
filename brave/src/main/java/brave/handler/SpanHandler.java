@@ -61,6 +61,7 @@ public abstract class SpanHandler {
    */
   public enum Cause {
     /**
+     * abandon放弃
      * Called on {@link Span#abandon()}.
      *
      * <p>This is useful when counting children. Decrement your counter when this occurs as the

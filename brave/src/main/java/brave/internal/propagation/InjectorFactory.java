@@ -48,8 +48,13 @@ import java.util.Set;
  * implement {@link RemoteSetter} nor {@link Request}.
  */
 public final class InjectorFactory {
+
   /** Like {@link TraceContext.Injector}, except the {@link Setter} is a parameter. */
   public interface InjectorFunction {
+
+    /**
+     * 什么都不做的InjectorFunction
+     */
     InjectorFunction NOOP = new InjectorFunction() {
       @Override public List<String> keyNames() {
         return Collections.emptyList();
@@ -60,6 +65,7 @@ public final class InjectorFactory {
     };
 
     /**
+     * 需要inject的字段名
      * The distinct list of key names this can inject.
      *
      * @see Propagation#keys()
@@ -176,7 +182,9 @@ public final class InjectorFactory {
    * remote or not.
    */
   public <R> TraceContext.Injector<R> newInjector(Setter<R, String> setter) {
-    if (setter == null) throw new NullPointerException("setter == null");
+    if (setter == null){
+      throw new NullPointerException("setter == null");
+    }
     if (setter instanceof RemoteSetter) {
       RemoteSetter<?> remoteSetter = (RemoteSetter<?>) setter;
       switch (remoteSetter.spanKind()) {
@@ -222,6 +230,9 @@ public final class InjectorFactory {
         + "}";
   }
 
+  /**
+   * Deferred: 延迟的
+   */
   static final class DeferredInjector<R> implements TraceContext.Injector<R> {
     final Setter<R, String> setter;
     final InjectorFactory injectorFactory;
@@ -243,9 +254,11 @@ public final class InjectorFactory {
           case CONSUMER:
             injectorFactory.consumerInjectorFunction.inject(setter, context, request);
             return;
-          default: // SERVER is nonsense as it cannot be injected
+          default:
+            // SERVER is nonsense as it cannot be injected
         }
       }
+      // InjectorFunction
       injectorFactory.injectorFunction.inject(setter, context, request);
     }
 
@@ -303,22 +316,30 @@ public final class InjectorFactory {
   }
 
   static InjectorFunction injectorFunction(InjectorFunction existing, InjectorFunction... update) {
-    if (update == null) throw new NullPointerException("injectorFunctions == null");
-    LinkedHashSet<InjectorFunction> injectorFunctionSet =
-        new LinkedHashSet<>(Arrays.asList(update));
+    if (update == null) {
+      throw new NullPointerException("injectorFunctions == null");
+    }
+    LinkedHashSet<InjectorFunction> injectorFunctionSet = new LinkedHashSet<>(Arrays.asList(update));
     if (injectorFunctionSet.contains(null)) {
       throw new NullPointerException("injectorFunction == null");
     }
     injectorFunctionSet.remove(InjectorFunction.NOOP);
-    if (injectorFunctionSet.isEmpty()) return existing;
-    if (injectorFunctionSet.size() == 1) return injectorFunctionSet.iterator().next();
+    if (injectorFunctionSet.isEmpty()){
+      return existing;
+    }
+    if (injectorFunctionSet.size() == 1) {
+      return injectorFunctionSet.iterator().next();
+    }
     return new CompositeInjectorFunction(injectorFunctionSet.toArray(new InjectorFunction[0]));
   }
 
+  /**
+   * 组合InjectorFunction
+   */
   static final class CompositeInjectorFunction implements InjectorFunction {
-    final InjectorFunction[] injectorFunctions; // Array ensures no iterators are created at runtime
+    // Array ensures no iterators are created at runtime
+    final InjectorFunction[] injectorFunctions;
     final List<String> keyNames;
-
     CompositeInjectorFunction(InjectorFunction[] injectorFunctions) {
       this.injectorFunctions = injectorFunctions;
       Set<String> keyNames = new LinkedHashSet<>();

@@ -25,11 +25,15 @@ import brave.propagation.TraceContext;
  * @since 5.7
  */
 public abstract class HttpClientRequest extends HttpRequest {
+
+  // 设置HttpClientRequest
   static final RemoteSetter<HttpClientRequest> SETTER = new RemoteSetter<HttpClientRequest>() {
+    // client
     @Override public Kind spanKind() {
       return Kind.CLIENT;
     }
 
+    // 设置请求头
     @Override public void put(HttpClientRequest request, String key, String value) {
       request.header(key, value);
     }
@@ -38,6 +42,7 @@ public abstract class HttpClientRequest extends HttpRequest {
       return "HttpClientRequest::header";
     }
   };
+
 
   @Override public final Kind spanKind() {
     return Kind.CLIENT;

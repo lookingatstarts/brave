@@ -31,6 +31,10 @@ import static brave.http.HttpSampler.toHttpRequestSampler;
  */
 // Not final as it previously was not. This allows mocks and similar.
 public class HttpTracing implements Closeable {
+
+  /**
+   * httpTracing缓存
+   */
   static final AtomicReference<HttpTracing> CURRENT = new AtomicReference<>();
 
   public static HttpTracing create(Tracing tracing) {
@@ -221,8 +225,10 @@ public class HttpTracing implements Closeable {
       if (tracing == null) throw new NullPointerException("tracing == null");
       this.tracing = tracing;
       this.serverName = "";
+      // 使用默认实现
       this.clientRequestParser = this.serverRequestParser = HttpRequestParser.DEFAULT;
       this.clientResponseParser = this.serverResponseParser = HttpResponseParser.DEFAULT;
+      // 使用推迟
       this.clientSampler = this.serverSampler = SamplerFunctions.deferDecision();
     }
 
@@ -384,7 +390,6 @@ public class HttpTracing implements Closeable {
 
   /** @since 5.9 */
   @Override public void close() {
-    // only set null if we are the outer-most instance
     CURRENT.compareAndSet(this, null);
   }
 }

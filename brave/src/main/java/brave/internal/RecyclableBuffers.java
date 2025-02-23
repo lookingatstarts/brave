@@ -13,6 +13,9 @@
  */
 package brave.internal;
 
+/**
+ * 可重复使用缓冲区
+ */
 public final class RecyclableBuffers {
 
   private static final ThreadLocal<char[]> PARSE_BUFFER = new ThreadLocal<>();

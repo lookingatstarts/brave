@@ -59,38 +59,50 @@ public final class PendingSpans extends WeakConcurrentMap<TraceContext, PendingS
     return getIfPresent(context);
   }
 
-  public PendingSpan getOrCreate(
-    @Nullable TraceContext parent, TraceContext context, boolean start) {
+  /**
+   *
+   * @param parent
+   * @param context
+   * @param start
+   * @return
+   */
+  public PendingSpan getOrCreate(@Nullable TraceContext parent, TraceContext context, boolean start) {
+    // 从缓存中取
     PendingSpan result = get(context);
-    if (result != null) return result;
-
+    if (result != null){
+      return result;
+    }
+    // 创建一个新的span,defaultSpan为MutableSpan
     MutableSpan span = new MutableSpan(context, defaultSpan);
-    PendingSpan parentSpan = parent != null ? get(parent) : null;
-
+    PendingSpan parentSpan = (parent != null) ? get(parent) : null;
     // save overhead calculating time if the parent is in-progress (usually is)
     TickClock clock;
+    // 父pendingSpan存在
     if (parentSpan != null) {
       TraceContext parentContext = parentSpan.context();
-      if (parentContext != null) parent = parentContext;
+      if (parentContext != null){
+        parent = parentContext;
+      }
       clock = parentSpan.clock;
-      if (start) span.startTimestamp(clock.currentTimeMicroseconds());
+      if (start){
+        span.startTimestamp(clock.currentTimeMicroseconds());
+      }
     } else {
       long currentTimeMicroseconds = this.clock.currentTimeMicroseconds();
       clock = new TickClock(currentTimeMicroseconds, System.nanoTime());
-      if (start) span.startTimestamp(currentTimeMicroseconds);
+      if (start){
+        span.startTimestamp(currentTimeMicroseconds);
+      }
     }
-
     PendingSpan newSpan = new PendingSpan(context, span, clock);
     // Probably absent because we already checked with get() at the entrance of this method
     PendingSpan previousSpan = putIfProbablyAbsent(context, newSpan);
-    if (previousSpan != null) return previousSpan; // lost race
-
+    if (previousSpan != null){
+      return previousSpan; // lost race
+    }
     // We've now allocated a new trace context.
-    assert parent != null || context.isLocalRoot() :
-      "Bug (or unexpected call to internal code): parent can only be null in a local root!";
-
-    spanHandler.begin(newSpan.handlerContext, newSpan.span, parentSpan != null
-      ? parentSpan.handlerContext : null);
+    assert parent != null || context.isLocalRoot() : "Bug (or unexpected call to internal code): parent can only be null in a local root!";
+    spanHandler.begin(newSpan.handlerContext, newSpan.span, (parentSpan != null) ? parentSpan.handlerContext : null);
     return newSpan;
   }
 

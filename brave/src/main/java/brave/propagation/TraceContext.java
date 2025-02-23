@@ -172,10 +172,11 @@ public final class TraceContext extends SamplingFlags {
    * True if we are recording a server span with the same span ID parsed from incoming headers.
    *
    * <h3>Impact on indexing</h3>
-   * <p>When an RPC trace is client-originated, it will be sampled and the same span ID is used for
-   * the server side. The shared flag helps prioritize timestamp and duration indexing in favor of
-   * the client. In v1 format, there is no shared flag, so it implies converters should not store
-   * timestamp and duration on the server span explicitly.
+   * <p>When an RPC trace is client-originated(从客户端发起的trace),
+   * it will be sampled(客户端的span被采样了) and the same span ID is used for the server side(服务端也使用相同spanId).
+   * The shared flag helps prioritize(优先) timestamp and duration indexing in favor of the client.
+   * In v1 format, there is no shared flag,
+   * so it implies(意味着) converters should not store timestamp and duration on the server span explicitly(明确的).
    */
   public boolean shared() {
     return (flags & FLAG_SHARED) == FLAG_SHARED;
@@ -541,6 +542,7 @@ public final class TraceContext extends SamplingFlags {
   }
 
   /**
+   * 当前上下文
    * traceIdHigh: 唯一标识trace的16字节id，即128-bit
    * traceId: 唯一标识trace的8字节id
    * parentId: 父级Span的spanId
@@ -623,7 +625,9 @@ public final class TraceContext extends SamplingFlags {
   }
 
   static <T> T findExtra(Class<T> type, List<Object> extra) {
-    if (type == null) throw new NullPointerException("type == null");
+    if (type == null){
+      throw new NullPointerException("type == null");
+    }
     for (int i = 0, length = extra.size(); i < length; i++) {
       Object nextExtra = extra.get(i);
       if (nextExtra.getClass() == type) return (T) nextExtra;

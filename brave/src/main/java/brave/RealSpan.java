@@ -21,14 +21,14 @@ import brave.propagation.TraceContext;
 final class RealSpan extends Span {
   final TraceContext context;
   final PendingSpans pendingSpans;
+  // 可被修改的span
   final MutableSpan state;
   final Clock clock;
 
   RealSpan(TraceContext context,
     PendingSpans pendingSpans,
     MutableSpan state,
-    Clock clock
-  ) {
+    Clock clock) {
     this.context = context;
     this.pendingSpans = pendingSpans;
     this.state = state;
@@ -76,25 +76,28 @@ final class RealSpan extends Span {
     return annotate(clock.currentTimeMicroseconds(), value);
   }
 
+  /**
+   * 修改annotate
+   */
   @Override public Span annotate(long timestamp, String value) {
     // Modern instrumentation should not send annotations such as this, but we leniently
     // accept them rather than fail. This for example allows old bridges like to Brave v3 to work
-    if ("cs".equals(value)) {
+    if ("cs".equals(value)) { // client send
       synchronized (state) {
         state.kind(Span.Kind.CLIENT);
         state.startTimestamp(timestamp);
       }
-    } else if ("sr".equals(value)) {
+    } else if ("sr".equals(value)) { // server receive
       synchronized (state) {
         state.kind(Span.Kind.SERVER);
         state.startTimestamp(timestamp);
       }
-    } else if ("cr".equals(value)) {
+    } else if ("cr".equals(value)) { // client receive
       synchronized (state) {
         state.kind(Span.Kind.CLIENT);
       }
       finish(timestamp);
-    } else if ("ss".equals(value)) {
+    } else if ("ss".equals(value)) { // server send
       synchronized (state) {
         state.kind(Span.Kind.SERVER);
       }

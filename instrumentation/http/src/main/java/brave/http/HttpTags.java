@@ -145,7 +145,6 @@ public final class HttpTags {
   public static Tag<HttpRequest> requestHeader(String key, String headerName) {
     return new Tag<HttpRequest>(key) {
       String name = validateNonEmpty("headerName", headerName);
-
       @Override protected String parseValue(HttpRequest input, TraceContext context) {
         return input.header(name);
       }

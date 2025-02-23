@@ -60,7 +60,7 @@ import java.util.TreeSet;
  *   span.finish();
  * }
  * }</pre>
- *
+ * Correlation相关性
  * @see CorrelationScopeConfig
  * @see CorrelationScopeCustomizer
  * @see BaggagePropagation

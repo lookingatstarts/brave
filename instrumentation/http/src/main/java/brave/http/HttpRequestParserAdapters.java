@@ -22,6 +22,10 @@ import static brave.http.HttpHandler.NULL_SENTINEL;
 
 /** @deprecated Intentionally hidden: implemented to support deprecated signatures. */
 @Deprecated final class HttpRequestParserAdapters {
+
+  /**
+   * client适配器
+   */
   static final class ClientAdapter extends HttpRequestParserAdapter {
     ClientAdapter(CurrentTraceContext currentTraceContext, HttpParser parser) {
       super(currentTraceContext, parser);
@@ -31,8 +35,7 @@ import static brave.http.HttpHandler.NULL_SENTINEL;
       HttpAdapter<Object, ?> adapter;
       Object req;
       if (request instanceof HttpClientAdapters.FromRequestAdapter) { // is a HttpClientRequest
-        HttpClientAdapters.FromRequestAdapter wrapped =
-          (HttpClientAdapters.FromRequestAdapter) request;
+        HttpClientAdapters.FromRequestAdapter wrapped = (HttpClientAdapters.FromRequestAdapter) request;
         adapter = wrapped.adapter;
         req = wrapped.request;
       } else if (request instanceof HttpClientRequest) {
@@ -70,6 +73,9 @@ import static brave.http.HttpHandler.NULL_SENTINEL;
     }
   }
 
+  /**
+   * HttpParser适配器
+   */
   static abstract class HttpRequestParserAdapter implements HttpRequestParser {
     final CurrentTraceContext currentTraceContext;
     final HttpParser parser;
@@ -79,8 +85,7 @@ import static brave.http.HttpHandler.NULL_SENTINEL;
       this.parser = parser;
     }
 
-    <Req> void parseInScope(TraceContext context, HttpAdapter<Req, ?> adapter, Req req,
-      SpanCustomizer span) {
+    <Req> void parseInScope(TraceContext context, HttpAdapter<Req, ?> adapter, Req req, SpanCustomizer span) {
       Scope ws = currentTraceContext.maybeScope(context);
       try {
         parser.request(adapter, req, span);

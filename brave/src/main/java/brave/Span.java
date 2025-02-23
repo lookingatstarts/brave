@@ -73,8 +73,7 @@ public abstract class Span implements SpanCustomizer {
 
   /**
    * When true, no recording is done and nothing is reported to zipkin. However, this span should
-   * still be injected into outgoing requests. Use this flag to avoid performing expensive
-   * computation.
+   * still be injected into outgoing(外向的) requests. Use this flag to avoid performing expensive computation.
    */
   public abstract boolean isNoop();
 
@@ -143,7 +142,9 @@ public abstract class Span implements SpanCustomizer {
    */
   @Deprecated public Span remoteEndpoint(Endpoint endpoint) {
     if (endpoint == null) return this;
-    if (endpoint.serviceName() != null) remoteServiceName(endpoint.serviceName());
+    if (endpoint.serviceName() != null) {
+      remoteServiceName(endpoint.serviceName());
+    }
     String ip = endpoint.ipv6() != null ? endpoint.ipv6() : endpoint.ipv4();
     remoteIpAndPort(ip, endpoint.portAsInt());
     return this;
