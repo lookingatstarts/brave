@@ -93,13 +93,16 @@ import static brave.internal.baggage.ExtraBaggageContext.findExtra;
  */
 public final class BaggagePropagation<K> implements Propagation<K> {
   /** Wraps an underlying propagation implementation, pushing one or more fields. */
+  // 静态代理
   public static FactoryBuilder newFactoryBuilder(Propagation.Factory delegate) {
     return new FactoryBuilder(delegate);
   }
 
   public static class FactoryBuilder { // not final to backport ExtraFieldPropagation
     final Propagation.Factory delegate;
+    // 需要提取的字段
     final List<String> extractKeyNames = new ArrayList<>();
+    // 配置
     final Set<BaggagePropagationConfig> configs = new LinkedHashSet<>();
 
     FactoryBuilder(Propagation.Factory delegate) {
@@ -143,7 +146,6 @@ public final class BaggagePropagation<K> implements Propagation<K> {
         }
         extractKeyNames.add(extractKeyName);
       }
-
       configs.add(config);
       return this;
     }
@@ -157,6 +159,9 @@ public final class BaggagePropagation<K> implements Propagation<K> {
 
   /** Stored in {@link TraceContextOrSamplingFlags#extra()} or {@link TraceContext#extra()} */
   static final class Extra {
+    /**
+     * 提取的字段名
+     */
     final List<String> extractKeyNames;
 
     Extra(List<String> extractKeyNames) {
@@ -165,6 +170,7 @@ public final class BaggagePropagation<K> implements Propagation<K> {
   }
 
   static final class Factory extends Propagation.Factory implements Propagation<String> {
+    // 静态代理的Propagation
     final Propagation.Factory delegateFactory;
     final Propagation<String> delegate;
     final BaggageFields.Factory baggageFactory;

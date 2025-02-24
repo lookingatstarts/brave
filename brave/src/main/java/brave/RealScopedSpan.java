@@ -24,6 +24,7 @@ final class RealScopedSpan extends ScopedSpan {
   final Scope scope;
   final MutableSpan state;
   final Clock clock;
+  // SpanHandler + TraceContext + MutableSpan
   final PendingSpans pendingSpans;
 
   RealScopedSpan(
@@ -69,7 +70,9 @@ final class RealScopedSpan extends ScopedSpan {
   }
 
   @Override public void finish() {
+    // 关闭scope
     scope.close();
+    // 触发调用SpanHandler
     pendingSpans.finish(context, 0L);
   }
 

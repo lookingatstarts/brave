@@ -33,15 +33,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <p>Spans are weakly referenced by their owning context. When the keys are collected, they are
  * transferred to a queue, waiting to be reported. A call to modify any span will implicitly flush
  * orphans to Zipkin. Spans in this state will have a "brave.flush" annotation added to them.
+ *
+ * 等待中的span
  */
 public final class PendingSpans extends WeakConcurrentMap<TraceContext, PendingSpan> {
+
   final MutableSpan defaultSpan;
   final Clock clock;
   final SpanHandler spanHandler;
   final AtomicBoolean noop;
 
-  public PendingSpans(MutableSpan defaultSpan, Clock clock, SpanHandler spanHandler,
-    AtomicBoolean noop) {
+  public PendingSpans(MutableSpan defaultSpan, Clock clock,
+                      SpanHandler spanHandler, AtomicBoolean noop) {
     this.defaultSpan = defaultSpan;
     this.clock = clock;
     this.spanHandler = spanHandler;
@@ -94,6 +97,7 @@ public final class PendingSpans extends WeakConcurrentMap<TraceContext, PendingS
         span.startTimestamp(currentTimeMicroseconds);
       }
     }
+    // 创建一个新的pendingSpan
     PendingSpan newSpan = new PendingSpan(context, span, clock);
     // Probably absent because we already checked with get() at the entrance of this method
     PendingSpan previousSpan = putIfProbablyAbsent(context, newSpan);
@@ -131,6 +135,7 @@ public final class PendingSpans extends WeakConcurrentMap<TraceContext, PendingS
     PendingSpan last = remove(context);
     if (last == null) return;
     last.span.finishTimestamp(timestamp != 0L ? timestamp : last.clock.currentTimeMicroseconds());
+    // span
     spanHandler.end(last.handlerContext, last.span, Cause.FINISHED);
   }
 

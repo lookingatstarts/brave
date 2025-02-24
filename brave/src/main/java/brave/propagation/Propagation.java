@@ -34,6 +34,8 @@ import java.util.List;
  *
  * @param <K> Deprecated except when a {@link String}.
  * @since 4.0
+ *
+ * Injector + Extractor + keys
  */
 public interface Propagation<K> {
   /**
@@ -118,6 +120,8 @@ public interface Propagation<K> {
      *
      * @see TraceContext#extra()
      * @since 4.9
+     *
+     * 增强TraceContext
      */
     public TraceContext decorate(TraceContext context) {
       return context;

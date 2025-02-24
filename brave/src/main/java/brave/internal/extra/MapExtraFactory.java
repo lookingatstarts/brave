@@ -23,6 +23,7 @@ import static brave.internal.collect.LongBitSet.MAX_SIZE;
 
 public abstract class MapExtraFactory<K, V, A extends MapExtra<K, V, A, F>,
     F extends MapExtraFactory<K, V, A, F>> extends ExtraFactory<A, F> {
+
   public static final int MAX_DYNAMIC_ENTRIES = MAX_SIZE;
 
   // no static newBuilder method as we don't want to have shadowing in the concrete subtype

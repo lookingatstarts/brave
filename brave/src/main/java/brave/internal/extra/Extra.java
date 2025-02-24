@@ -33,6 +33,7 @@ import java.util.Arrays;
 //  * gives us a lock not exposed to users
 //  * allows findExtra(ExtraFieldsSubtype.class)
 public abstract class Extra<E extends Extra<E, F>, F extends ExtraFactory<E, F>> {
+
   protected final F factory; // compared by reference to ensure same configuration
 
   /**

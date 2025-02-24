@@ -143,6 +143,7 @@ public class Tracer {
   }
 
   /**
+   * 创建一个新的span
    * Explicitly creates a new trace. The result will be a root span (no parent span ID).
    * root span没有parentSpanId
    *
@@ -215,7 +216,10 @@ public class Tracer {
   }
 
   TraceContext newRootContext(int flags) {
-    flags &= ~FLAG_SHARED; // cannot be shared if we aren't reusing the span ID
+    // cannot be shared if we aren't reusing the span ID
+    // 如果不重复使用spanId就不能分享
+    flags &= ~FLAG_SHARED;
+    // 创建root TraceContext
     return decorateContext(flags, 0L, 0L, 0L, 0L, 0L, Collections.emptyList());
   }
 
@@ -291,7 +295,7 @@ public class Tracer {
     } else {
       flags &= ~FLAG_LOCAL_ROOT;
     }
-    // 创建TraceContext
+    // 创建TraceContext，并且使用propagationFactory增强TraceContext
     return propagationFactory.decorate(InternalPropagation.instance.newTraceContext(
       flags,
       traceIdHigh,
@@ -584,7 +588,7 @@ public class Tracer {
     if (samplerFunction == null) throw new NullPointerException("samplerFunction == null");
     if (arg == null) throw new NullPointerException("arg == null");
     if (parent != null) return decorateContext(parent, parent.spanId());
-
+    // 是否采样
     Boolean sampled = samplerFunction.trySample(arg);
     SamplingFlags flags = sampled != null ? (sampled ? SAMPLED : NOT_SAMPLED) : EMPTY;
     return newRootContext(InternalPropagation.instance.flags(flags));
@@ -605,9 +609,12 @@ public class Tracer {
   }
 
   ScopedSpan newScopedSpan(@Nullable TraceContext parent, TraceContext context, String name) {
+    // 创建一个新的Scope
     Scope scope = currentTraceContext.newScope(context);
-    if (isNoop(context)) return new NoopScopedSpan(context, scope);
-
+    if (isNoop(context)){
+      // Noop不增加额外逻辑
+      return new NoopScopedSpan(context, scope);
+    }
     PendingSpan pendingSpan = pendingSpans.getOrCreate(parent, context, true);
     Clock clock = pendingSpan.clock();
     MutableSpan state = pendingSpan.state();
@@ -615,22 +622,33 @@ public class Tracer {
     return new RealScopedSpan(context, scope, state, clock, pendingSpans);
   }
 
+  /**
+   * 关闭scope
+   */
   /** A span remains in the scope it was bound to until close is called. */
   public static final class SpanInScope implements Closeable {
+
     final Scope scope;
 
     // This type hides the SPI type and allows us to double-check the SPI didn't return null.
-    SpanInScope(Scope scope) {
-      if (scope == null) throw new NullPointerException("scope == null");
+    /**
+     * 为了隐藏Scope的具体类型
+     */
+    public SpanInScope(Scope scope) {
+      if (scope == null){
+        throw new NullPointerException("scope == null");
+      }
       this.scope = scope;
     }
 
     /** No exceptions are thrown when unbinding a span scope. */
-    @Override public void close() {
+    @Override
+    public void close() {
       scope.close();
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
       return scope.toString();
     }
   }
@@ -644,9 +662,13 @@ public class Tracer {
   }
 
   boolean isNoop(TraceContext context) {
-    if (noop.get()) return true;
+    if (noop.get()){
+      return true;
+    }
     int flags = InternalPropagation.instance.flags(context);
-    if ((flags & FLAG_SAMPLED_LOCAL) == FLAG_SAMPLED_LOCAL) return false;
+    if ((flags & FLAG_SAMPLED_LOCAL) == FLAG_SAMPLED_LOCAL) {
+      return false;
+    }
     return (flags & FLAG_SAMPLED) != FLAG_SAMPLED;
   }
 

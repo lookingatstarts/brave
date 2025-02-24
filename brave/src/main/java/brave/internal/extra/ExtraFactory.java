@@ -66,6 +66,8 @@ import brave.propagation.TraceContextOrSamplingFlags;
  * @param <F> An instance of this factory. {@link #<E>} should be associated with only one factory.
  */
 public abstract class ExtraFactory<E extends Extra<E, F>, F extends ExtraFactory<E, F>> {
+
+  // 初始值
   final Object initialState;
 
   /**
@@ -121,21 +123,20 @@ public abstract class ExtraFactory<E extends Extra<E, F>, F extends ExtraFactory
    */
   public final TraceContext decorate(TraceContext context) {
     long traceId = context.traceId(), spanId = context.spanId();
-
     E claimed = null;
     int existingIndex = -1, extraLength = context.extra().size();
     for (int i = 0; i < extraLength; i++) {
       Object next = context.extra().get(i);
+      // 类型是Extra
       if (next instanceof Extra) {
         Extra nextExtra = (Extra) next;
         // Don't interfere with other instances or subtypes
         if (nextExtra.factory != this) continue;
-
+        // Claim：认领
         if (claimed == null && nextExtra.tryToClaim(traceId, spanId)) {
           claimed = (E) nextExtra;
           continue;
         }
-
         if (existingIndex == -1) {
           existingIndex = i;
         } else {
@@ -144,12 +145,10 @@ public abstract class ExtraFactory<E extends Extra<E, F>, F extends ExtraFactory
         }
       }
     }
-
     // Easiest when there is neither existing state to assign, nor need to change context.extra()
     if (claimed != null && existingIndex == -1) {
       return context;
     }
-
     // If context.extra() didn't have an unclaimed extra instance, create one for this context.
     if (claimed == null) {
       claimed = create();
@@ -159,9 +158,7 @@ public abstract class ExtraFactory<E extends Extra<E, F>, F extends ExtraFactory
       }
       claimed.tryToClaim(traceId, spanId);
     }
-
     TraceContext.Builder builder = context.toBuilder().clearExtra().addExtra(claimed);
-
     for (int i = 0; i < extraLength; i++) {
       Object next = context.extra().get(i);
       if (i == existingIndex) {
@@ -176,7 +173,6 @@ public abstract class ExtraFactory<E extends Extra<E, F>, F extends ExtraFactory
         builder.addExtra(next);
       }
     }
-
     return builder.build();
   }
 }

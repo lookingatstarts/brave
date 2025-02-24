@@ -61,10 +61,12 @@ public class WeakConcurrentMap<K, V> extends ReferenceQueue<K> {
     if (key == null)
       throw new NullPointerException("key == null");
     expungeStaleEntries();
-
     return target.remove(key);
   }
 
+  /**
+   * 清除所有无用的对象
+   */
   /** Cleans all unused references. */
   protected void expungeStaleEntries() {
     Reference<?> reference;
@@ -73,6 +75,7 @@ public class WeakConcurrentMap<K, V> extends ReferenceQueue<K> {
     }
   }
 
+  // 移除entry
   protected V removeStaleEntry(Reference<?> reference) {
     return target.remove(reference);
   }

@@ -34,8 +34,7 @@ public abstract class BaggageContext {
     @Nullable String value);
 
   /** Returns false if the update was ignored. */
-  public abstract boolean updateValue(BaggageField field, TraceContext context,
-    @Nullable String value);
+  public abstract boolean updateValue(BaggageField field, TraceContext context, @Nullable String value);
 
   /**
    * 只读权限

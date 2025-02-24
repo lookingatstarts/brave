@@ -25,11 +25,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 额外信息字段编码
+ */
 public interface BaggageCodec {
   /**
    * Use this when configuration results in no codec needed.
    */
   BaggageCodec NOOP = new BaggageCodec() {
+
     @Override public List<String> extractKeyNames() {
       return Collections.emptyList();
     }

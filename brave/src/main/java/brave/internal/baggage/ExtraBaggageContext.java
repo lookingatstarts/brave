@@ -23,10 +23,11 @@ import java.util.Map;
 
 /**
  * Most commonly, field storage is inside {@link TraceContext#extra()}.
- *
+ * 额外的字段存储在TraceContext#extra
  * @see BaggageFields
  */
 public final class ExtraBaggageContext extends BaggageContext {
+  // 单例模式
   static final ExtraBaggageContext INSTANCE = new ExtraBaggageContext();
 
   public static BaggageContext get() {
@@ -34,7 +35,9 @@ public final class ExtraBaggageContext extends BaggageContext {
   }
 
   public static List<BaggageField> getAllFields(TraceContextOrSamplingFlags extracted) {
-    if (extracted.context() != null) return getAllFields(extracted.context());
+    if (extracted.context() != null){
+      return getAllFields(extracted.context());
+    }
     return getAllFields(extracted.extra());
   }
 
@@ -80,12 +83,18 @@ public final class ExtraBaggageContext extends BaggageContext {
     return updateValue(field, context.extra(), value);
   }
 
+  /**
+   * 从字段中提取
+   */
   static List<BaggageField> getAllFields(List<Object> extraList) {
     BaggageFields extra = findExtra(BaggageFields.class, extraList);
     if (extra == null) return Collections.emptyList();
     return extra.getAllFields();
   }
 
+  /**
+   * 提取值
+   */
   static Map<String, String> getAllValues(List<Object> extraList) {
     BaggageFields extra = findExtra(BaggageFields.class, extraList);
     if (extra == null) return Collections.emptyMap();
@@ -110,13 +119,19 @@ public final class ExtraBaggageContext extends BaggageContext {
     return extra.getValue(field);
   }
 
+
   static boolean updateValue(BaggageField field, List<Object> extraList, @Nullable String value) {
     BaggageFields extra = findExtra(BaggageFields.class, extraList);
     return extra != null && extra.updateValue(field, value);
   }
 
+  /**
+   * 查询字段类型的值
+   */
   public static <T> T findExtra(Class<T> type, List<Object> extra) {
-    if (type == null) throw new NullPointerException("type == null");
+    if (type == null){
+      throw new NullPointerException("type == null");
+    }
     for (int i = 0, length = extra.size(); i < length; i++) {
       Object nextExtra = extra.get(i);
       if (nextExtra.getClass() == type) return (T) nextExtra;

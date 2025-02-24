@@ -83,23 +83,26 @@ public class MapExtra<K, V, A extends MapExtra<K, V, A, F>,
    * @since 5.12
    */
   protected boolean put(K key, @Nullable V value) {
-    if (key == null) return false;
-
+    if (key == null){
+      return false;
+    }
     int i = indexOfExistingKey(state(), key);
     if (i == -1 && factory.maxDynamicEntries == 0) {
       Platform.get().log("Ignoring request to add a dynamic key", null);
       return false;
     }
-
     synchronized (lock) {
       Object[] prior = state();
-
       // double-check lost race in dynamic case
-      if (i == -1) i = indexOfDynamicKey(prior, key);
-      if (i == -1) return addNewEntry(prior, key, value);
-
-      if (equal(value, prior[i + 1])) return false;
-
+      if (i == -1){
+        i = indexOfDynamicKey(prior, key);
+      }
+      if (i == -1){
+        return addNewEntry(prior, key, value);
+      }
+      if (equal(value, prior[i + 1])){
+        return false;
+      }
       Object[] newState = Arrays.copyOf(prior, prior.length); // copy-on-write
       newState[i + 1] = value;
       this.state = newState;

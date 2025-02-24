@@ -52,7 +52,6 @@ public abstract class ScopedSpan implements SpanCustomizer {
 
   /**
    * Returns the trace context associated with this span
-   *
    * @since 4.19
    */
   // This api is exposed as there's always a context in scope by definition, and the context is
@@ -64,21 +63,24 @@ public abstract class ScopedSpan implements SpanCustomizer {
    *
    * @since 5.11
    */
-  @Override public abstract ScopedSpan name(String name);
+  @Override
+  public abstract ScopedSpan name(String name);
 
   /**
    * {@inheritDoc}
    *
    * @since 4.19
    */
-  @Override public abstract ScopedSpan tag(String key, String value);
+  @Override
+  public abstract ScopedSpan tag(String key, String value);
 
   /**
    * {@inheritDoc}
    *
    * @since 4.19
    */
-  @Override public abstract ScopedSpan annotate(String value);
+  @Override
+  public abstract ScopedSpan annotate(String value);
 
   /**
    * Records an error that impacted this operation.

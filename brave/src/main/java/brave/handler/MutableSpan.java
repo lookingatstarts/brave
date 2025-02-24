@@ -126,8 +126,12 @@ public final class MutableSpan implements Cloneable {
     this.parentId = context.parentIdString();
     this.id = context.spanIdString();
     flags = 0; // don't inherit flags from the span
-    if (context.debug()) setDebug();
-    if (context.shared()) setShared();
+    if (context.debug()){
+      setDebug();
+    }
+    if (context.shared()){
+      setShared();
+    }
   }
 
   /**
@@ -136,7 +140,9 @@ public final class MutableSpan implements Cloneable {
   /** @since 5.12 */
   public MutableSpan(MutableSpan toCopy) {
     if (toCopy == null) throw new NullPointerException("toCopy == null");
-    if (toCopy.equals(EMPTY)) return;
+    if (toCopy.equals(EMPTY)){
+      return;
+    }
     traceId = toCopy.traceId;
     localRootId = toCopy.localRootId;
     parentId = toCopy.parentId;

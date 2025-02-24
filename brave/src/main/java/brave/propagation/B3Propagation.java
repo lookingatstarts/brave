@@ -110,6 +110,8 @@ public abstract class B3Propagation<K> implements Propagation<K> {
   /**
    * Defaults to {@link Format#MULTI} for client/server spans and {@link Format#SINGLE_NO_PARENT}
    * for messaging. Non-request spans default to {@link Format#MULTI}.
+   *
+   * B3Propagation工厂类
    */
   public static final class FactoryBuilder {
     // InjectorFactory工厂类
@@ -227,7 +229,7 @@ public abstract class B3Propagation<K> implements Propagation<K> {
   static final class Factory extends Propagation.Factory implements Propagation<String> {
     // 获取InjectorFactory
     final InjectorFactory injectorFactory;
-
+    // FactoryBuilder：Factory构建者
     Factory(FactoryBuilder builder) {
       injectorFactory = builder.injectorFactoryBuilder.build();
     }
@@ -253,6 +255,7 @@ public abstract class B3Propagation<K> implements Propagation<K> {
     }
 
     @Override public <R> Injector<R> injector(Setter<R, String> setter) {
+      // 使用工厂类生成injector
       return injectorFactory.newInjector(setter);
     }
 
@@ -276,6 +279,8 @@ public abstract class B3Propagation<K> implements Propagation<K> {
     @Override public String toString() {
       return "B3Propagation";
     }
+
+    // TraceContext decorate(TraceContext context) 使用父类使用
   }
 
   /**
